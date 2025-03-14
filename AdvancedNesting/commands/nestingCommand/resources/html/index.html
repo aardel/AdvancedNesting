@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Advanced Nesting</title>
+    <link rel="stylesheet" href="static/styles.css">
+    <script src="static/nesting.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Advanced Nesting</h1>
+        
+        <div class="tabs">
+            <button class="tab-button active" data-tab="settings">Settings</button>
+            <button class="tab-button" data-tab="preview">Preview</button>
+            <button class="tab-button" data-tab="results">Results</button>
+        </div>
+        
+        <div id="settings" class="tab-content active">
+            <h2>Sheet Settings</h2>
+            <div class="form-group">
+                <label for="sheet-preset">Material Preset:</label>
+                <select id="sheet-preset">
+                    <option value="custom">Custom Size</option>
+                    <option value="plywood-4x8">Plywood 4' x 8'</option>
+                    <option value="mdf-5x5">MDF 5' x 5'</option>
+                    <option value="acrylic-4x6">Acrylic 4' x 6'</option>
+                    <option value="aluminum-4x8">Aluminum 4' x 8'</option>
+                </select>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="sheet-width">Width:</label>
+                    <input type="number" id="sheet-width" value="120" min="1" step="0.1">
+                    <span class="unit">cm</span>
+                </div>
+                <div class="form-group">
+                    <label for="sheet-height">Height:</label>
+                    <input type="number" id="sheet-height" value="240" min="1" step="0.1">
+                    <span class="unit">cm</span>
+                </div>
+                <div class="form-group">
+                    <label for="edge-clearance">Edge Clearance:</label>
+                    <input type="number" id="edge-clearance" value="1" min="0" step="0.1">
+                    <span class="unit">cm</span>
+                </div>
+                <div class="form-group">
+                    <label for="gutter-size">Space Between Parts:</label>
+                    <input type="number" id="gutter-size" value="0.5" min="0" step="0.1">
+                    <span class="unit">cm</span>
+                </div>
+            </div>
+            
+            <h2>Nesting Options</h2>
+            <div class="form-group">
+                <label for="nesting-method">Nesting Method:</label>
+                <select id="nesting-method">
+                    <option value="grid">Grid Pattern</option>
+                    <option value="binpack">Bin Packing</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="optimization-level">Optimization Level:</label>
+                <select id="optimization-level">
+                    <option value="fast">Fast</option>
+                    <option value="standard" selected>Standard</option>
+                    <option value="max">Maximum</option>
+                </select>
+                <span class="info-tooltip" title="Higher optimization levels provide better material usage but take longer to compute">ⓘ</span>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="auto-rotate" checked>
+                <label for="auto-rotate">Auto-rotate parts for better yield</label>
+            </div>
+            
+            <div class="button-group">
+                <button id="run-nesting" class="primary-button">Run Nesting</button>
+                <button id="save-settings" class="secondary-button">Save Settings</button>
+            </div>
+        </div>
+        
+        <div id="preview" class="tab-content">
+            <div class="preview-container">
+                <canvas id="preview-canvas"></canvas>
+                <div class="zoom-controls">
+                    <button id="zoom-in">+</button>
+                    <button id="zoom-out">-</button>
+                    <button id="zoom-fit">Fit</button>
+                </div>
+            </div>
+            <div class="preview-info">
+                <p>Sheet dimensions: <span id="preview-dimensions">120 × 240 cm</span></p>
+                <p>Parts placed: <span id="preview-parts-count">0</span></p>
+                <p>Material utilization: <span id="preview-utilization">0%</span></p>
+            </div>
+            <div class="button-group">
+                <button id="apply-nesting" class="primary-button">Apply Nesting</button>
+                <button id="export-nesting" class="secondary-button">Export</button>
+            </div>
+        </div>
+        
+        <div id="results" class="tab-content">
+            <h2>Nesting Results</h2>
+            <div class="results-summary">
+                <div class="result-item">
+                    <span class="result-label">Total Parts:</span>
+                    <span id="total-parts" class="result-value">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Sheets Required:</span>
+                    <span id="sheets-required" class="result-value">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Material Utilization:</span>
+                    <span id="material-utilization" class="result-value">0%</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Processing Time:</span>
+                    <span id="processing-time" class="result-value">0s</span>
+                </div>
+            </div>
+            
+            <h3>Material Usage</h3>
+            <div class="progress-bar-container">
+                <div id="utilization-bar" class="progress-bar" style="width: 0%;">0%</div>
+            </div>
+            
+            <h3>Part Placement</h3>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Sheet</th>
+                        <th>Part ID</th>
+                        <th>Position (X,Y)</th>
+                        <th>Rotation</th>
+                    </tr>
+                </thead>
+                <tbody id="placement-table-body">
+                    <!-- Results will be populated here -->
+                </tbody>
+            </table>
+            
+            <div class="button-group">
+                <button id="save-report" class="secondary-button">Save Report</button>
+                <button id="new-nesting" class="primary-button">New Nesting</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

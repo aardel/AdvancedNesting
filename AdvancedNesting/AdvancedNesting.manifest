@@ -1,0 +1,13 @@
+{
+	"autodeskProduct":	"Fusion",
+	"type":	"addin",
+	"id":	"2866cece-0f56-423e-b2f9-b0a92118d5bc",
+	"author":	"Aaron Delia",
+	"description":	{
+		"":	"Advanced Nesting add-in for Fusion 360 that provides enhanced nesting capabilities for manufacturing workflows."
+	},
+	"version":	"1.0.0",
+	"runOnStartup":	true,
+	"supportedOS":	"windows|mac",
+	"editEnabled":	true
+}
