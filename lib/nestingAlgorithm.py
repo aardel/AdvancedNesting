@@ -227,309 +227,100 @@ def bin_packing_nesting(sheet_width, sheet_height, parts_list, edge_clearance, g
     return solution
 
 def calculate_sketch_bounding_box(sketch):
-    """Calculate the bounding box of a sketch"""
-    try:
-        min_x = float('inf')
-        min_y = float('inf')
-        max_x = float('-inf')
-        max_y = float('-inf')
-        
-        has_curves = False
-        
-        # Iterate through sketch curves to find min/max points
-        for curve in sketch.sketchCurves:
-            has_curves = True
-            
-            try:
-                if curve.objectType == adsk.fusion.SketchCircle.classType():
-                    circle = adsk.fusion.SketchCircle.cast(curve)
-                    center = circle.centerPoint
-                    radius = circle.radius
-                    
-                    min_x = min(min_x, center.x - radius)
-                    min_y = min(min_y, center.y - radius)
-                    max_x = max(max_x, center.x + radius)
-                    max_y = max(max_y, center.y + radius)
-                    
-                elif curve.objectType == adsk.fusion.SketchLine.classType():
-                    line = adsk.fusion.SketchLine.cast(curve)
-                    
-                    try:
-                        # Method 1
-                        start_x = line.startPoint.x
-                        start_y = line.startPoint.y
-                        end_x = line.endPoint.x
-                        end_y = line.endPoint.y
-                    except:
-                        # Method 2
-                        try:
-                            start_x = line.startSketchPoint.geometry.x
-                            start_y = line.startSketchPoint.geometry.y
-                            end_x = line.endSketchPoint.geometry.x
-                            end_y = line.endSketchPoint.geometry.y
-                        except:
-                            continue
-                    
-                    min_x = min(min_x, start_x, end_x)
-                    min_y = min(min_y, start_y, end_y)
-                    max_x = max(max_x, start_x, end_x)
-                    max_y = max(max_y, start_y, end_y)
-                    
-                elif curve.objectType == adsk.fusion.SketchArc.classType():
-                    arc = adsk.fusion.SketchArc.cast(curve)
-                    
-                    try:
-                        center = arc.centerPoint
-                        start_point = arc.startPoint
-                        
-                        # Get the radius
-                        radius = center.distanceTo(start_point)
-                        
-                        min_x = min(min_x, center.x - radius)
-                        min_y = min(min_y, center.y - radius)
-                        max_x = max(max_x, center.x + radius)
-                        max_y = max(max_y, center.y + radius)
-                    except:
-                        try:
-                            center_x = arc.centerSketchPoint.geometry.x
-                            center_y = arc.centerSketchPoint.geometry.y
-                            start_x = arc.startSketchPoint.geometry.x
-                            start_y = arc.startSketchPoint.geometry.y
-                            
-                            # Calculate radius
-                            radius = math.sqrt((start_x - center_x)**2 + (start_y - center_y)**2)
-                            
-                            min_x = min(min_x, center_x - radius)
-                            min_y = min(min_y, center_y - radius)
-                            max_x = max(max_x, center_x + radius)
-                            max_y = max(max_y, center_y + radius)
-                        except:
-                            continue
-            except:
-                continue
-        
-        if not has_curves or min_x == float('inf'):
-            return None
-        
-        # Ensure a minimum size to prevent zero-width/height boxes
-        if max_x - min_x < 0.01:
-            max_x = min_x + 0.01
-        if max_y - min_y < 0.01:
-            max_y = min_y + 0.01
-            
-        return [min_x, max_x, min_y, max_y]
-        
-    except:
-        return None
-
-def place_sketch_with_offset(layout_sketch, sketch, x_offset, y_offset, bbox, rotate=False):
     """
-    Place a sketch in the layout with offset and rotation
+    Calculate the bounding box of a sketch
     
     Args:
-        layout_sketch: The sketch where parts will be placed
-        sketch: The sketch to copy
-        x_offset, y_offset: Position to place the part
-        bbox: Bounding box [min_x, max_x, min_y, max_y]
-        rotate: Whether to rotate 90 degrees
+        sketch: The Fusion 360 sketch to analyze
+        
+    Returns:
+        tuple: (min_x, max_x, min_y, max_y) or None if sketch is empty
     """
-    min_x, max_x, min_y, max_y = bbox
+    try:
+        if not sketch:
+            return None
+            
+        min_x = float('inf')
+        max_x = float('-inf')
+        min_y = float('inf')
+        max_y = float('-inf')
+        
+        # Process sketch curves (lines, arcs, circles, etc.)
+        for curve in sketch.sketchCurves:
+            # Get the bounding box of each curve
+            bbox = curve.boundingBox
+            if not bbox:
+                continue
+                
+            # Update global bounds
+            min_x = min(min_x, bbox.minPoint.x)
+            max_x = max(max_x, bbox.maxPoint.x)
+            min_y = min(min_y, bbox.minPoint.y)
+            max_y = max(max_y, bbox.maxPoint.y)
+            
+        # Process sketch points
+        for point in sketch.sketchPoints:
+            geo = point.geometry
+            min_x = min(min_x, geo.x)
+            max_x = max(max_x, geo.x)
+            min_y = min(min_y, geo.y)
+            max_y = max(max_y, geo.y)
+            
+        # Check if we found any geometry
+        if min_x == float('inf'):
+            return None
+            
+        return (min_x, max_x, min_y, max_y)
+        
+    except:
+        print(f"Error calculating bounding box: {traceback.format_exc()}")
+        return None
+
+def place_sketch_with_offset(target_sketch, source_sketch, x_offset, y_offset, bbox, rotate=False):
+    """
+    Copy a sketch to a target sketch with offset
     
-    # Copy each curve with offset and possible rotation
-    for curve in sketch.sketchCurves:
-        try:
-            if rotate:
-                # Rotate the part by 90 degrees
-                if curve.objectType == adsk.fusion.SketchCircle.classType():
-                    circle = adsk.fusion.SketchCircle.cast(curve)
-                    
-                    # Calculate center point after rotation (90 degrees around origin)
-                    orig_x = circle.centerPoint.x - min_x
-                    orig_y = circle.centerPoint.y - min_y
-                    
-                    # Rotate 90 degrees (swap x,y and negate one)
-                    rot_x = orig_y
-                    rot_y = -orig_x
-                    
-                    # Apply offset
-                    center_x = rot_x + x_offset + min_x
-                    center_y = rot_y + y_offset + min_y
-                    
-                    # Create the circle at the new position
-                    layout_sketch.sketchCurves.sketchCircles.addByCenterRadius(
-                        adsk.core.Point3D.create(center_x, center_y, 0),
-                        circle.radius
-                    )
-                    
-                elif curve.objectType == adsk.fusion.SketchLine.classType():
-                    line = adsk.fusion.SketchLine.cast(curve)
-                    
-                    try:
-                        orig_start_x = line.startPoint.x - min_x
-                        orig_start_y = line.startPoint.y - min_y
-                        orig_end_x = line.endPoint.x - min_x
-                        orig_end_y = line.endPoint.y - min_y
-                        
-                        # Rotate 90 degrees
-                        rot_start_x = orig_start_y
-                        rot_start_y = -orig_start_x
-                        rot_end_x = orig_end_y
-                        rot_end_y = -orig_end_x
-                        
-                        # Apply offset
-                        start_x = rot_start_x + x_offset + min_x
-                        start_y = rot_start_y + y_offset + min_y
-                        end_x = rot_end_x + x_offset + min_x
-                        end_y = rot_end_y + y_offset + min_y
-                        
-                        # Create new line
-                        layout_sketch.sketchCurves.sketchLines.addByTwoPoints(
-                            adsk.core.Point3D.create(start_x, start_y, 0),
-                            adsk.core.Point3D.create(end_x, end_y, 0)
-                        )
-                    except:
-                        # Try alternative method
-                        try:
-                            # Method using startSketchPoint
-                            orig_start_x = line.startSketchPoint.geometry.x - min_x
-                            orig_start_y = line.startSketchPoint.geometry.y - min_y
-                            orig_end_x = line.endSketchPoint.geometry.x - min_x
-                            orig_end_y = line.endSketchPoint.geometry.y - min_y
-                            
-                            # Rotate 90 degrees
-                            rot_start_x = orig_start_y
-                            rot_start_y = -orig_start_x
-                            rot_end_x = orig_end_y
-                            rot_end_y = -orig_end_x
-                            
-                            # Apply offset
-                            start_x = rot_start_x + x_offset + min_x
-                            start_y = rot_start_y + y_offset + min_y
-                            end_x = rot_end_x + x_offset + min_x
-                            end_y = rot_end_y + y_offset + min_y
-                            
-                            # Create new line
-                            layout_sketch.sketchCurves.sketchLines.addByTwoPoints(
-                                adsk.core.Point3D.create(start_x, start_y, 0),
-                                adsk.core.Point3D.create(end_x, end_y, 0)
-                            )
-                        except:
-                            pass
-                            
-                elif curve.objectType == adsk.fusion.SketchArc.classType():
-                    arc = adsk.fusion.SketchArc.cast(curve)
-                    
-                    try:
-                        # Get points from the arc
-                        orig_center_x = arc.centerPoint.x - min_x
-                        orig_center_y = arc.centerPoint.y - min_y
-                        orig_start_x = arc.startPoint.x - min_x
-                        orig_start_y = arc.startPoint.y - min_y
-                        orig_end_x = arc.endPoint.x - min_x
-                        orig_end_y = arc.endPoint.y - min_y
-                        
-                        # Rotate 90 degrees
-                        rot_center_x = orig_center_y
-                        rot_center_y = -orig_center_x
-                        rot_start_x = orig_start_y
-                        rot_start_y = -orig_start_x
-                        rot_end_x = orig_end_y
-                        rot_end_y = -orig_end_x
-                        
-                        # Apply offset
-                        center_x = rot_center_x + x_offset + min_x
-                        center_y = rot_center_y + y_offset + min_y
-                        start_x = rot_start_x + x_offset + min_x
-                        start_y = rot_start_y + y_offset + min_y
-                        end_x = rot_end_x + x_offset + min_x
-                        end_y = rot_end_y + y_offset + min_y
-                        
-                        # Create new arc
-                        layout_sketch.sketchCurves.sketchArcs.addByThreePoints(
-                            adsk.core.Point3D.create(start_x, start_y, 0),
-                            adsk.core.Point3D.create(end_x, end_y, 0),
-                            adsk.core.Point3D.create(center_x, center_y, 0)
-                        )
-                    except:
-                        pass
-            else:
-                # Normal orientation (no rotation)
-                if curve.objectType == adsk.fusion.SketchCircle.classType():
-                    circle = adsk.fusion.SketchCircle.cast(curve)
-                    center_x = circle.centerPoint.x + x_offset
-                    center_y = circle.centerPoint.y + y_offset
-                    
-                    # Create the circle at the new position
-                    layout_sketch.sketchCurves.sketchCircles.addByCenterRadius(
-                        adsk.core.Point3D.create(center_x, center_y, 0),
-                        circle.radius
-                    )
-                    
-                elif curve.objectType == adsk.fusion.SketchLine.classType():
-                    line = adsk.fusion.SketchLine.cast(curve)
-                    
-                    try:
-                        # Method 1
-                        start_x = line.startPoint.x + x_offset
-                        start_y = line.startPoint.y + y_offset
-                        end_x = line.endPoint.x + x_offset
-                        end_y = line.endPoint.y + x_offset
-                        
-                        # Create new line
-                        layout_sketch.sketchCurves.sketchLines.addByTwoPoints(
-                            adsk.core.Point3D.create(start_x, start_y, 0),
-                            adsk.core.Point3D.create(end_x, end_y, 0)
-                        )
-                    except:
-                        try:
-                            # Method 2 using startSketchPoint
-                            start_x = line.startSketchPoint.geometry.x + x_offset
-                            start_y = line.startSketchPoint.geometry.y + y_offset
-                            end_x = line.endSketchPoint.geometry.x + x_offset
-                            end_y = line.endSketchPoint.geometry.y + y_offset
-                            
-                            # Create new line
-                            layout_sketch.sketchCurves.sketchLines.addByTwoPoints(
-                                adsk.core.Point3D.create(start_x, start_y, 0),
-                                adsk.core.Point3D.create(end_x, end_y, 0)
-                            )
-                        except:
-                            pass
-                            
-                elif curve.objectType == adsk.fusion.SketchArc.classType():
-                    arc = adsk.fusion.SketchArc.cast(curve)
-                    
-                    try:
-                        center_x = arc.centerPoint.x + x_offset
-                        center_y = arc.centerPoint.y + y_offset
-                        start_x = arc.startPoint.x + x_offset
-                        start_y = arc.startPoint.y + y_offset
-                        end_x = arc.endPoint.x + x_offset
-                        end_y = arc.endPoint.y + y_offset
-                        
-                        # Create new arc
-                        layout_sketch.sketchCurves.sketchArcs.addByThreePoints(
-                            adsk.core.Point3D.create(start_x, start_y, 0),
-                            adsk.core.Point3D.create(end_x, end_y, 0),
-                            adsk.core.Point3D.create(center_x, center_y, 0)
-                        )
-                    except:
-                        try:
-                            # Try alternative method for arcs
-                            center_x = arc.centerSketchPoint.geometry.x + x_offset
-                            center_y = arc.centerSketchPoint.geometry.y + y_offset
-                            start_x = arc.startSketchPoint.geometry.x + x_offset
-                            start_y = arc.startSketchPoint.geometry.y + y_offset
-                            end_x = arc.endSketchPoint.geometry.x + x_offset
-                            end_y = arc.endSketchPoint.geometry.y + y_offset
-                            
-                            # Create new arc
-                            layout_sketch.sketchCurves.sketchArcs.addByThreePoints(
-                                adsk.core.Point3D.create(start_x, start_y, 0),
-                                adsk.core.Point3D.create(end_x, end_y, 0),
-                                adsk.core.Point3D.create(center_x, center_y, 0)
-                            )
-                        except:
-                            pass
-        except:
-            pass
+    Args:
+        target_sketch: The target sketch to copy into
+        source_sketch: The source sketch to copy from
+        x_offset: The X offset to apply
+        y_offset: The Y offset to apply
+        bbox: The bounding box of the source sketch (min_x, max_x, min_y, max_y)
+        rotate: Whether to rotate the sketch 90 degrees
+        
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        app = adsk.core.Application.get()
+        design = app.activeProduct
+        
+        # Create a transform to apply to the copied entities
+        transform = adsk.core.Matrix3D.create()
+        
+        # Apply rotation if requested (around center of bounding box)
+        if rotate:
+            min_x, max_x, min_y, max_y = bbox
+            center_x = (min_x + max_x) / 2
+            center_y = (min_y + max_y) / 2
+            
+            # Translate to origin, rotate, translate back
+            transform.translation = adsk.core.Vector3D.create(-center_x, -center_y, 0)
+            rot_transform = adsk.core.Matrix3D.create()
+            rot_transform.setToRotation(math.pi/2, adsk.core.Vector3D.create(0, 0, 1), adsk.core.Point3D.create(0, 0, 0))
+            transform.transformBy(rot_transform)
+            transform.translation = adsk.core.Vector3D.create(center_y, -center_x, 0)  # Swapped due to rotation
+        
+        # Apply the offset
+        if rotate:
+            transform.translation = adsk.core.Vector3D.create(x_offset, y_offset, 0)
+        else:
+            transform.translation = adsk.core.Vector3D.create(x_offset, y_offset, 0)
+        
+        # Copy the sketch
+        target_sketch.copy(source_sketch, transform)
+        return True
+        
+    except:
+        print(f"Error placing sketch: {traceback.format_exc()}")
+        return False

@@ -1,61 +1,34 @@
-# Advanced Nesting Add-in for Fusion 360
+# Advanced Nesting for Fusion 360
 
-A powerful nesting solution for optimizing part layouts on sheet materials.
+This add-in provides enhanced nesting capabilities for Fusion 360 to optimize material usage for manufacturing workflows.
 
 ## Features
 
-- **Grid Pattern Nesting**: Efficiently arrange parts in rows and columns
-- **Bin Packing Algorithm**: Advanced algorithm for optimal material utilization 
-- **Automatic Rotation**: Automatically rotates parts for better yield
-- **Interactive UI**: Easy-to-use interface for configuring nesting parameters
-- **Preview Generation**: Preview the layout before creating sketches
+- **Optimized Part Layout**: Automatically arrange parts on sheet materials for efficient cutting
+- **Rotation Optimization**: Automatically detect if rotating parts yields better material utilization
+- **Customizable Settings**: Adjust sheet dimensions, clearances, and spacing for your specific needs
+- **Kerf Compensation**: Account for cutting tool width in your nesting layouts
+- **Visual Feedback**: See real-time preview of your nested layout
 
 ## Installation
 
-1. Download the latest release from GitHub
-2. Unzip the folder to a location on your computer
-3. In Fusion 360, go to the "Scripts and Add-Ins" dialog (Shift+S)
-4. Select the "Add-Ins" tab and click the "+" icon
-5. Browse to the unzipped folder and select it
-6. The add-in should now appear in your list of add-ins
+1. Download this repository as a ZIP file
+2. Extract to a location on your computer
+3. In Fusion 360, go to Tools tab → Add-Ins → Scripts and Add-Ins
+4. Select the "Add-Ins" tab and click the green "+" icon
+5. Navigate to the extracted folder and select the "AdvancedNesting" directory
+6. Click "Run" to start the add-in
 
 ## Usage
 
-### Basic Nesting
+1. Create or open a sketch containing the part you want to nest
+2. Click on the "Advanced Nesting" command in the Manufacture tab
+3. Select your sheet size and nesting parameters
+4. Click "OK" to generate the nesting layout
 
-1. Create or open a design containing the parts you want to nest
-2. Select the "Advanced Nesting" command from the Manufacturing panel
-3. Set your sheet dimensions and spacing parameters
-4. Select the sketch, profile, or component to nest
-5. Choose your nesting method and quantity
-6. Click OK to generate the nesting layout
+## Requirements
 
-### Nesting Parameters
-
-- **Sheet Width/Height**: Dimensions of your stock material
-- **Edge Clearance**: Minimum distance from parts to the edge of the sheet
-- **Space Between Parts**: Minimum distance between adjacent parts
-- **Nesting Method**: Choose between grid pattern or bin packing algorithms
-- **Quantity**: Number of parts to nest
-
-## Advanced Features
-
-### Bin Packing Algorithm
-
-The bin packing algorithm provides more efficient material utilization than simple grid patterns:
-
-- Handles multiple different parts in a single nest
-- Automatically rotates parts when beneficial
-- Optimizes placement to minimize waste
-- Reports material utilization percentage
-
-### Multiple Sheet Support
-
-For large quantities that don't fit on a single sheet:
-
-1. Enter the total quantity needed
-2. The add-in will calculate how many sheets are required
-3. Each sheet will be created as a separate sketch
+- Fusion 360 (2021 or newer)
 
 ## Development
 

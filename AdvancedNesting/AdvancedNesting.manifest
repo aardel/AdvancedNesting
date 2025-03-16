@@ -6,7 +6,7 @@
 	"description":	{
 		"":	"Advanced Nesting add-in for Fusion 360 that provides enhanced nesting capabilities for manufacturing workflows."
 	},
-	"version":	"1.0.0",
+	"version":	"1.0.1",
 	"runOnStartup":	true,
 	"supportedOS":	"windows|mac",
 	"editEnabled":	true

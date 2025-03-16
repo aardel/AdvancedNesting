@@ -49,4 +49,16 @@ class Profile:
     @property
     def loops(self) -> ProfileLoops: ...
 
+class SketchCurves:
+    pass
+
+class SketchPoints:
+    pass
+
+class Point3D:
+    pass
+
+class ProfileLoops:
+    pass
+
 # Add more classes as needed...

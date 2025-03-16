@@ -1,4 +1,16 @@
 {
-    "ignore": ["adsk"],
-    "reportMissingImports": false
+    "typeCheckingMode": "basic",
+    "include": [
+        "AdvancedNesting"
+    ],
+    "exclude": [
+        "**/node_modules",
+        "**/__pycache__"
+    ],
+    "ignore": [
+        "adsk"
+    ],
+    "reportMissingImports": false,
+    "reportMissingTypeStubs": false,
+    "pythonVersion": "3.8"
 }

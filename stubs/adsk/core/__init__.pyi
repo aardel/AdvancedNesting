@@ -82,4 +82,49 @@ class PaletteDockingStates:
     PaletteDockStateRight: int
     PaletteDockStateFloating: int
 
+class ProgressDialog:
+    pass
+
+class Workspaces:
+    pass
+
+class Palettes:
+    pass
+
+class Selections:
+    pass
+
+class CommandEvent:
+    pass
+
+class InputChangedEvent:
+    pass
+
+class ValidateInputsEvent:
+    pass
+
+class DropDownCommandInput:
+    pass
+
+class ValueInput:
+    pass
+
+class ValueCommandInput:
+    pass
+
+class SelectionCommandInput:
+    pass
+
+class IntegerSpinnerCommandInput:
+    pass
+
+class BoolValueCommandInput:
+    pass
+
+class TextBoxCommandInput:
+    pass
+
+class CommandInput:
+    pass
+
 # Add more classes as needed...
